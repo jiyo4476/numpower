@@ -2902,31 +2902,27 @@ PHP_METHOD(NDArray, variance) {
  */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_ndarray_cov, 0, 0, 1)
 ZEND_ARG_INFO(0, array)
-ZEND_ARG_INFO(0, axis)
+ZEND_ARG_INFO(0, rowvar)
 ZEND_END_ARG_INFO()
 PHP_METHOD(NDArray, cov) {
     NDArray *rtn = NULL;
     zval *array;
-    long axis;
-    int i_axis;
-    ZEND_PARSE_PARAMETERS_START(1, 1)
+    bool rowvar = true;
+    ZEND_PARSE_PARAMETERS_START(1, 2)
     Z_PARAM_ZVAL(array)
+    Z_PARAM_OPTIONAL
+    Z_PARAM_BOOL(rowvar)
     ZEND_PARSE_PARAMETERS_END();
-    i_axis = (int)axis;
     NDArray *nda = ZVAL_TO_NDARRAY(array);
     if (nda == NULL) {
         return;
     }
 
     if (NDArray_DEVICE(nda) == NDARRAY_DEVICE_CPU) {
-        rtn = NDArray_cov(nda);
+        rtn = NDArray_cov(nda, rowvar);
     } else {
 #ifdef HAVE_CUBLAS
-        if (ZEND_NUM_ARGS() == 1) {
-            rtn = NDArray_cov(nda);
-        } else {
-            rtn = single_reduce(nda, &i_axis, NDArray_Mean_Float);
-        }
+        rtn = NDArray_cov(nda, rowvar);
 #else
         zend_throw_error(NULL, "GPU operations unavailable. CUBLAS not detected.");
 #endif

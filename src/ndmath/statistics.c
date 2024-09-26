@@ -161,8 +161,12 @@ NDArray_Average(NDArray *a, NDArray *weights) {
  * @param a
  * @return
  */
-NDArray *NDArray_cov(NDArray *a)
+NDArray *NDArray_cov(NDArray *a, bool rowvar)
 {
+    if (!rowvar) {
+        a = NDArray_Transpose(a, NULL);
+    }
+    
     if (a == NULL || NDArray_NUMELEMENTS(a) == 0)
     {
         zend_throw_error(NULL, "Input cannot be null or empty.");
