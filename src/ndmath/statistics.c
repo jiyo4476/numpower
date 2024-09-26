@@ -3,6 +3,8 @@
 #include "string.h"
 #include "../initializers.h"
 #include "arithmetics.h"
+#include "../manipulation.h"
+#include "linalg.h"
 
 // Comparison function for sorting
 int compare_quantile(const void* a, const void* b) {
@@ -150,5 +152,63 @@ NDArray_Average(NDArray *a, NDArray *weights) {
         rtn = NDArray_CreateFromFloatScalar(s_aweights / s_weights);
         NDArray_FREE(m_weights);
     }
+    return rtn;
+}
+
+/**
+ * NDArray::cov
+ *
+ * @param a
+ * @return
+ */
+NDArray *NDArray_cov(NDArray *a)
+{
+    if (a == NULL || NDArray_NUMELEMENTS(a) == 0)
+    {
+        zend_throw_error(NULL, "Input cannot be null or empty.");
+        return NULL;
+    }
+    if (NDArray_NDIM(a) != 2 || NDArray_SHAPE(a)[1] == 1)
+    {
+        zend_throw_error(NULL, "Input must be a 2D NDArray.");
+        return NULL;
+    }
+
+    int cols = NDArray_SHAPE(a)[0];
+    int rows = NDArray_SHAPE(a)[1];
+
+    float *a_data = (float *)emalloc(sizeof(float) * NDArray_NUMELEMENTS(a));
+    memcpy(a_data, NDArray_FDATA(a), rows * cols * sizeof(float));
+
+    int *col_shape = emalloc(sizeof(int) * 2);
+    col_shape[0] = rows;
+    col_shape[1] = 1;
+
+    NDArray **norm_vectors = emalloc(sizeof(NDArray *) * cols);
+    for (int i = 0; i < cols; i++)
+    {
+        NDArray *col_vector = NDArray_Zeros(col_shape, 2, NDArray_TYPE(a), NDArray_DEVICE(a));
+        size_t offset = i * rows * sizeof(char);
+        memcpy(NDArray_FDATA(col_vector), a_data + offset, rows * sizeof(float));
+        NDArray *mean = NDArray_CreateFromFloatScalar(NDArray_Sum_Float(col_vector) / NDArray_NUMELEMENTS(col_vector));
+        NDArray *subtracted = NDArray_Subtract_Float(col_vector, mean);
+        efree(col_vector);
+        efree(mean);
+        norm_vectors[i] = subtracted;
+    }
+    efree(a_data);
+    NDArray *norm_a = NDArray_Reshape(NDArray_ConcatenateFlat(norm_vectors, cols), NDArray_SHAPE(a), NDArray_NDIM(a));
+    for (int i = 0; i < cols; i++)
+    {
+        efree(norm_vectors[i]);
+    }
+    efree(col_shape);
+    efree(norm_vectors);
+    NDArray *norm_a_T = NDArray_Transpose(norm_a, NULL);
+    NDArray *multiplied = NDArray_Dot(norm_a, norm_a_T);
+    efree(norm_a);
+    efree(norm_a_T);
+    NDArray *rtn = NDArray_Divide_Float(multiplied, NDArray_CreateFromFloatScalar((float)rows - 1));
+    efree(multiplied);
     return rtn;
 }

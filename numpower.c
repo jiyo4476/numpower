@@ -2895,6 +2895,52 @@ PHP_METHOD(NDArray, variance) {
 }
 
 /**
+ * NDArray::cov
+ *
+ * @param execute_data
+ * @param return_value
+ */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_ndarray_cov, 0, 0, 1)
+ZEND_ARG_INFO(0, array)
+ZEND_ARG_INFO(0, axis)
+ZEND_END_ARG_INFO()
+PHP_METHOD(NDArray, cov) {
+    NDArray *rtn = NULL;
+    zval *array;
+    long axis;
+    int i_axis;
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+    Z_PARAM_ZVAL(array)
+    ZEND_PARSE_PARAMETERS_END();
+    i_axis = (int)axis;
+    NDArray *nda = ZVAL_TO_NDARRAY(array);
+    if (nda == NULL) {
+        return;
+    }
+
+    if (NDArray_DEVICE(nda) == NDARRAY_DEVICE_CPU) {
+        rtn = NDArray_cov(nda);
+    } else {
+#ifdef HAVE_CUBLAS
+        if (ZEND_NUM_ARGS() == 1) {
+            rtn = NDArray_cov(nda);
+        } else {
+            rtn = single_reduce(nda, &i_axis, NDArray_Mean_Float);
+        }
+#else
+        zend_throw_error(NULL, "GPU operations unavailable. CUBLAS not detected.");
+#endif
+    }
+    if (rtn == NULL) {
+        return;
+    }
+    if (Z_TYPE_P(array) == IS_ARRAY) {
+        NDArray_FREE(nda);
+    }
+    RETURN_NDARRAY(rtn, return_value);
+}
+
+/**
  * NDArray::ceil
  *
  * @param execute_data
@@ -5180,6 +5226,7 @@ static const zend_function_entry class_NDArray_methods[] = {
     ZEND_ME(NDArray, average, arginfo_ndarray_average, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     ZEND_ME(NDArray, std, arginfo_ndarray_std, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     ZEND_ME(NDArray, quantile, arginfo_ndarray_quantile, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    ZEND_ME(NDArray, cov, arginfo_ndarray_cov, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 
     // ARITHMETICS
     ZEND_ME(NDArray, add, arginfo_ndarray_add, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
