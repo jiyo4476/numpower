@@ -204,10 +204,8 @@ NDArray *NDArray_cov(NDArray *a)
     }
     efree(col_shape);
     efree(norm_vectors);
-    NDArray *norm_a_T = NDArray_Transpose(norm_a, NULL);
-    NDArray *multiplied = NDArray_Dot(norm_a, norm_a_T);
+    NDArray *multiplied = NDArray_Dot(norm_a, NDArray_Transpose(norm_a, NULL));
     efree(norm_a);
-    efree(norm_a_T);
     NDArray *rtn = NDArray_Divide_Float(multiplied, NDArray_CreateFromFloatScalar((float)rows - 1));
     efree(multiplied);
     return rtn;
