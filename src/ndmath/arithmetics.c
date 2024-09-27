@@ -945,3 +945,18 @@ NDArray_Abs(NDArray *nda) {
     }
     return rtn;
 }
+
+/**
+ * NDArray::cumprod
+ *
+ * @param a
+ * @param axis
+ * @return
+ */
+NDArray*
+NDArray_Cum_Prod_Float(NDArray *a, int axis) {
+    NDArray *rtn = NULL;
+    // TODO
+    return rtn;
+}
+
