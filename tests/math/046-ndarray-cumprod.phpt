@@ -8,6 +8,7 @@ $a = \NDArray::array([[1, 2, 3], [4, 5, 6]]);
 print_r(\NDArray::cumprod($empty)->toArray());
 print_r(\NDArray::cumprod($single)->toArray());
 print_r(\NDArray::cumprod($a)->toArray());
+print_r(\NDArray::cumprod($a, 0)->toArray());
 print_r(\NDArray::cumprod($a, 1)->toArray());
 ?>
 --EXPECT--
@@ -37,6 +38,19 @@ Array
             [0] => 4
             [1] => 20
             [2] => 120
+        )
+
+)
+Array
+(
+    [0] => Array
+        (
+            [0] => 1
+            [1] => 2
+            [2] => 6
+            [3] => 24
+            [4] => 120
+            [5] => 720
         )
 
 )
