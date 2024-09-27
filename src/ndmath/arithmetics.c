@@ -954,7 +954,7 @@ NDArray_Abs(NDArray *nda) {
  * @return
  */
 NDArray*
-NDArray_Cum_Prod_Float(NDArray *a, int axis) {
+NDArray_Cum_Prod(NDArray *a, int *axis) {
     NDArray *rtn = NULL;
     // TODO
     return rtn;
