@@ -955,8 +955,36 @@ NDArray_Abs(NDArray *nda) {
  */
 NDArray*
 NDArray_Cum_Prod(NDArray *a, int *axis) {
-    NDArray *rtn = NULL;
-    // TODO
+    NDArray *rtn = NDArray_Copy(a, NDArray_DEVICE(a));
+
+    int num_elements = NDArray_NUMELEMENTS(rtn);
+
+    if (*axis == -1) {
+        for (int i = 1; i < num_elements; i++) {
+            NDArray_FDATA(rtn)[i] = NDArray_FDATA(rtn)[i] * NDArray_FDATA(rtn)[i - 1];
+        }
+        int *flat_shape = emalloc(sizeof(int) * 2);
+        flat_shape[0] = 1;
+        flat_shape[1] = num_elements;
+        rtn = NDArray_Reshape(rtn, flat_shape, 2);
+    } else {
+        int rows = NDArray_SHAPE(rtn)[0];
+        int cols = NDArray_SHAPE(rtn)[1];
+        if (*axis == 0) {
+            for (int i = 1; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    NDArray_FDATA(rtn)[i * cols + j] = NDArray_FDATA(rtn)[(i - 1) * cols + j] * NDArray_FDATA(rtn)[i * cols + j];
+                }
+            }
+        } else if (*axis == 1) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 1; j < cols; j++) {
+                    NDArray_FDATA(rtn)[i * cols + j] = NDArray_FDATA(rtn)[i * cols + j - 1] * NDArray_FDATA(rtn)[i * cols + j];
+                }
+            }
+        }
+    }
+
     return rtn;
 }
 

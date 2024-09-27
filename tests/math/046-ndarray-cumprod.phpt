@@ -14,6 +14,9 @@ print_r(\NDArray::cumprod($a, 1)->toArray());
 --EXPECT--
 Array
 (
+    [0] => Array
+        (
+        )
 
 )
 Array
@@ -21,23 +24,6 @@ Array
     [0] => Array
         (
             [0] => 3
-        )
-
-)
-Array
-(
-    [0] => Array
-        (
-            [0] => 1
-            [1] => 2
-            [2] => 6
-        )
-
-    [1] => Array
-        (
-            [0] => 4
-            [1] => 20
-            [2] => 120
         )
 
 )
