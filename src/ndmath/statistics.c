@@ -189,17 +189,33 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     col_shape[1] = 1;
 
     NDArray **norm_vectors = emalloc(sizeof(NDArray *) * cols);
+
+    int *indices_shape = emalloc(sizeof(int) * 2);
+    indices_shape[0] = 2;
+    indices_shape[1] = 1;
+
+    NDArray** indices_axis = emalloc(sizeof(NDArray*) * 2);
+    indices_axis[0] =  NDArray_Zeros(indices_shape, 1, NDArray_TYPE(a), NDArray_DEVICE(a));
+    indices_axis[1] =  NDArray_Zeros(indices_shape, 1, NDArray_TYPE(a), NDArray_DEVICE(a));
+
+    NDArray_FDATA(indices_axis[1])[0] = 0;
+    NDArray_FDATA(indices_axis[1])[1] = rows;
+
     for (int i = 0; i < cols; i++)
     {
-        NDArray *col_vector = NDArray_Zeros(col_shape, 2, NDArray_TYPE(a), NDArray_DEVICE(a));
-        size_t offset = i * rows * sizeof(char);
-        memcpy(NDArray_FDATA(col_vector), a_data + offset, rows * sizeof(float));
+        NDArray_FDATA(indices_axis[0])[0] = i;
+        NDArray_FDATA(indices_axis[0])[1] = i + 1;
+        NDArray *col_vector = NDArray_Slice(a, indices_axis, 2);
         NDArray *mean = NDArray_CreateFromFloatScalar(NDArray_Sum_Float(col_vector) / NDArray_NUMELEMENTS(col_vector));
         NDArray *subtracted = NDArray_Subtract_Float(col_vector, mean);
         efree(col_vector);
         efree(mean);
         norm_vectors[i] = subtracted;
     }
+    efree(indices_shape);
+    efree(indices_axis[0]);
+    efree(indices_axis[1]);
+    efree(indices_axis);
     efree(a_data);
     NDArray *norm_a = NDArray_Reshape(NDArray_ConcatenateFlat(norm_vectors, cols), NDArray_SHAPE(a), NDArray_NDIM(a));
     for (int i = 0; i < cols; i++)
