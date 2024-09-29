@@ -1014,14 +1014,35 @@ NDArray_Cum_Axis(NDArray *a, int *axis, NDArray *(*operation)(NDArray *, NDArray
  */
 NDArray*
 NDArray_Cum_Prod(NDArray *a, int *axis) {
+    NDArray *rtn = NULL;
+    
     if (*axis == -1) {
-        NDArray *rtn = NDArray_Cum_Flat(a, float_product);
-        return rtn;
+        rtn = NDArray_Cum_Flat(a, float_product);
     } else {
-        NDArray *rtn = NDArray_Cum_Axis(a, axis, NDArray_Multiply_Float);
-        return rtn;
+        rtn = NDArray_Cum_Axis(a, axis, NDArray_Multiply_Float);
     }
 
-    return NULL;
+    return rtn;
 }
+
+/**
+ * NDArray::cumsum
+ *
+ * @param a
+ * @param axis
+ * @return
+ */
+NDArray*
+NDArray_Cum_Sum(NDArray *a, int *axis) {
+    NDArray *rtn = NULL;
+
+    if (*axis == -1) {
+        rtn = NDArray_Cum_Flat(a, float_sum);
+    } else {
+        rtn = NDArray_Cum_Axis(a, axis, NDArray_Add_Float);
+    }
+
+    return rtn;
+}
+
 
