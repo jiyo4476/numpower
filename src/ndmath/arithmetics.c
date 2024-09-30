@@ -990,18 +990,18 @@ NDArray_Cum_Axis(NDArray *a, int *axis, NDArray *(*operation)(NDArray *, NDArray
             efree(curr_row);
         }
     }
-    efree(indices_shape);
     efree(indices_axis[0]);
     efree(indices_axis[1]);
     efree(indices_axis);
+    efree(indices_shape);
     NDArray *combined = NDArray_Concatenate(row_array, rows, 0);
-    if (*axis == 1) {
-        combined = NDArray_Transpose(combined, NULL);
-    }
     for (int i = 0; i < rows; i++) {
         NDArray_FREE(row_array[i]);
     }
     efree(row_array);
+    if (*axis == 1) {
+        combined = NDArray_Transpose(combined, NULL);
+    }
     return combined;
 }
 
