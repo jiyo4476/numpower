@@ -181,13 +181,6 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     int cols = NDArray_SHAPE(a)[0];
     int rows = NDArray_SHAPE(a)[1];
 
-    float *a_data = (float *)emalloc(sizeof(float) * NDArray_NUMELEMENTS(a));
-    memcpy(a_data, NDArray_FDATA(a), rows * cols * sizeof(float));
-
-    int *col_shape = emalloc(sizeof(int) * 2);
-    col_shape[0] = rows;
-    col_shape[1] = 1;
-
     NDArray **norm_vectors = emalloc(sizeof(NDArray *) * cols);
 
     int *indices_shape = emalloc(sizeof(int) * 2);
@@ -216,13 +209,11 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     efree(indices_axis[0]);
     efree(indices_axis[1]);
     efree(indices_axis);
-    efree(a_data);
     NDArray *norm_a = NDArray_Reshape(NDArray_ConcatenateFlat(norm_vectors, cols), NDArray_SHAPE(a), NDArray_NDIM(a));
     for (int i = 0; i < cols; i++)
     {
         efree(norm_vectors[i]);
     }
-    efree(col_shape);
     efree(norm_vectors);
     NDArray *multiplied = NDArray_Dot(norm_a, NDArray_Transpose(norm_a, NULL));
     efree(norm_a);
