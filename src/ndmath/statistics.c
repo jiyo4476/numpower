@@ -181,7 +181,7 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     int cols = NDArray_SHAPE(a)[0];
     int rows = NDArray_SHAPE(a)[1];
 
-    NDArray **norm_vectors = emalloc(sizeof(NDArray *) * cols);
+    NDArray **centered_vectors = emalloc(sizeof(NDArray *) * cols);
 
     int *indices_shape = emalloc(sizeof(int) * 2);
     indices_shape[0] = 2;
@@ -203,20 +203,20 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
         NDArray *subtracted = NDArray_Subtract_Float(col_vector, mean);
         efree(col_vector);
         efree(mean);
-        norm_vectors[i] = subtracted;
+        centered_vectors[i] = subtracted;
     }
     efree(indices_shape);
     efree(indices_axis[0]);
     efree(indices_axis[1]);
     efree(indices_axis);
-    NDArray *norm_a = NDArray_Reshape(NDArray_ConcatenateFlat(norm_vectors, cols), NDArray_SHAPE(a), NDArray_NDIM(a));
+    NDArray *centered_a = NDArray_Reshape(NDArray_ConcatenateFlat(centered_vectors, cols), NDArray_SHAPE(a), NDArray_NDIM(a));
     for (int i = 0; i < cols; i++)
     {
-        efree(norm_vectors[i]);
+        efree(centered_vectors[i]);
     }
-    efree(norm_vectors);
-    NDArray *multiplied = NDArray_Dot(norm_a, NDArray_Transpose(norm_a, NULL));
-    efree(norm_a);
+    efree(centered_vectors);
+    NDArray *multiplied = NDArray_Dot(centered_a, NDArray_Transpose(centered_a, NULL));
+    efree(centered_a);
     NDArray *rtn = NDArray_Divide_Float(multiplied, NDArray_CreateFromFloatScalar((float)rows - 1));
     efree(multiplied);
     return rtn;
