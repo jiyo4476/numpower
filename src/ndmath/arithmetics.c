@@ -965,13 +965,14 @@ NDArray_Cum_Axis(NDArray *a, int *axis, NDArray *(*operation)(NDArray *, NDArray
     if (*axis == 1) {
         a = NDArray_Transpose(a, NULL);
     }
-    NDArray** indices_axis = emalloc(sizeof(NDArray*) * 2);
+    
     int rows = NDArray_SHAPE(a)[0];
     int cols = NDArray_SHAPE(a)[1];
     // setup indices for slicing
     int *indices_shape = emalloc(sizeof(int) * 2);
     indices_shape[0] = 2;
     indices_shape[1] = 1;
+    NDArray** indices_axis = emalloc(sizeof(NDArray*) * 2);
     indices_axis[0] =  NDArray_Zeros(indices_shape, 1, NDARRAY_TYPE_FLOAT32, NDARRAY_DEVICE_CPU);
     indices_axis[1] =  NDArray_Zeros(indices_shape, 1, NDARRAY_TYPE_FLOAT32, NDARRAY_DEVICE_CPU);
     NDArray **row_array = emalloc(sizeof(NDArray*) * rows);
@@ -987,7 +988,7 @@ NDArray_Cum_Axis(NDArray *a, int *axis, NDArray *(*operation)(NDArray *, NDArray
         } else {
             NDArray *curr_row = NDArray_Slice(a, indices_axis, 2);
             row_array[i] = operation(row_array[i-1], curr_row);
-            efree(curr_row);
+            NDArray_FREE(curr_row);
         }
     }
     efree(indices_axis[0]);
