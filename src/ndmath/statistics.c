@@ -181,8 +181,6 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     int cols = NDArray_SHAPE(a)[0];
     int rows = NDArray_SHAPE(a)[1];
 
-    NDArray **centered_vectors = emalloc(sizeof(NDArray *) * cols);
-
     int *indices_shape = emalloc(sizeof(int) * 2);
     indices_shape[0] = 2;
     indices_shape[1] = 1;
@@ -194,6 +192,7 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     NDArray_FDATA(indices_axis[1])[0] = 0;
     NDArray_FDATA(indices_axis[1])[1] = rows;
 
+    NDArray **centered_vectors = emalloc(sizeof(NDArray *) * cols);
     for (int i = 0; i < cols; i++)
     {
         NDArray_FDATA(indices_axis[0])[0] = i;
