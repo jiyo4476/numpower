@@ -199,11 +199,9 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
         NDArray_FDATA(indices_axis[0])[0] = i;
         NDArray_FDATA(indices_axis[0])[1] = i + 1;
         NDArray *col_vector = NDArray_Slice(a, indices_axis, 2);
-        NDArray *mean = NDArray_CreateFromFloatScalar(NDArray_Sum_Float(col_vector) / NDArray_NUMELEMENTS(col_vector));
-        NDArray *subtracted = NDArray_Subtract_Float(col_vector, mean);
+        NDArray *centered = NDArray_Subtract_Float(col_vector, NDArray_CreateFromFloatScalar(NDArray_Sum_Float(col_vector) / NDArray_NUMELEMENTS(col_vector)));
         NDArray_FREE(col_vector);
-        NDArray_FREE(mean);
-        centered_vectors[i] = subtracted;
+        centered_vectors[i] = centered;
     }
     efree(indices_shape);
     efree(indices_axis[0]);
