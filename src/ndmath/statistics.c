@@ -201,8 +201,8 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
         NDArray *col_vector = NDArray_Slice(a, indices_axis, 2);
         NDArray *mean = NDArray_CreateFromFloatScalar(NDArray_Sum_Float(col_vector) / NDArray_NUMELEMENTS(col_vector));
         NDArray *subtracted = NDArray_Subtract_Float(col_vector, mean);
-        efree(col_vector);
-        efree(mean);
+        NDArray_FREE(col_vector);
+        NDArray_FREE(mean);
         centered_vectors[i] = subtracted;
     }
     efree(indices_shape);
@@ -212,12 +212,12 @@ NDArray *NDArray_cov(NDArray *a, bool rowvar)
     NDArray *centered_a = NDArray_Reshape(NDArray_ConcatenateFlat(centered_vectors, cols), NDArray_SHAPE(a), NDArray_NDIM(a));
     for (int i = 0; i < cols; i++)
     {
-        efree(centered_vectors[i]);
+        NDArray_FREE(centered_vectors[i]);
     }
     efree(centered_vectors);
     NDArray *multiplied = NDArray_Dot(centered_a, NDArray_Transpose(centered_a, NULL));
-    efree(centered_a);
+    NDArray_FREE(centered_a);
     NDArray *rtn = NDArray_Divide_Float(multiplied, NDArray_CreateFromFloatScalar((float)rows - 1));
-    efree(multiplied);
+    NDArray_FREE(multiplied);
     return rtn;
 }
